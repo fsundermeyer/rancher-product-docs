@@ -1,6 +1,6 @@
 = 2. Collect and Publish Images to your Private Registry
 :page-languages: [en, zh]
-:revdate: 2025-03-12
+:revdate: 2026-05-06
 :page-revdate: {revdate}
 :community-path: getting-started/installation-and-upgrade/other-installation-methods/air-gapped-helm-cli-install/publish-images.adoc 
 :product-path: installation-and-upgrade/other-installation-methods/air-gapped/publish-images.adoc
@@ -17,7 +17,7 @@ endif::[]
 
 This section describes how to set up your private registry so that when you install Rancher, Rancher will pull all the required images from this registry.
 
-By default, all images used to {xref-cluster-deployment}[provision Kubernetes clusters] or launch any tools in Rancher, e.g. monitoring, pipelines, alerts, are pulled from Docker Hub. In an air gapped installation of Rancher, you will need a private registry that is located somewhere accessible by your Rancher server. Then, you will load the registry with all the images.
+By default, all images used to {xref-cluster-deployment}[provision Kubernetes clusters] or launch any tools in Rancher, e.g. monitoring, pipelines, alerts, are pulled from Docker Hub. In an air-gapped installation of Rancher, you will need a private registry that is located somewhere accessible by your Rancher server. Then, you will load the registry with all the images.
 
 Populating the private registry with images is the same process for installing Rancher with Docker and for installing Rancher on a Kubernetes cluster.
 
@@ -55,7 +55,7 @@ If you will use ARM64 hosts, the registry must support manifests. As of April 20
 <h3><a id="_1_find_the_required_assets_for_your_rancher_version"></a>1. Find the required assets for your Rancher version</h3>
 
 . Go to our https://github.com/rancher/rancher/releases[releases page,] find the Rancher v2.x.x release that you want to install, and click *Assets*. Note: Don't use releases marked `rc` or `Pre-release`, as they are not stable for production environments.
-. From the release's *Assets* section, download the following files, which are required to install Rancher in an air gap environment:
+. From the release's *Assets* section, download the following files, which are required to install Rancher in an air-gap environment:
 
 |===
 | Release File | Description
@@ -79,7 +79,6 @@ If you will use ARM64 hosts, the registry must support manifests. As of April 20
 Skip this step if you are using your own certificates, or if you are terminating TLS on an external load balancer.
 ====
 
-
 In a Kubernetes Install, if you elect to use the Rancher default self-signed TLS certificates, you must add the https://artifacthub.io/packages/helm/cert-manager/cert-manager[`cert-manager`] image to `rancher-images.txt` as well.
 
 . Fetch the latest `cert-manager` Helm chart and parse the template for image details:
@@ -91,7 +90,7 @@ Recent changes to cert-manager require an upgrade. If you are upgrading Rancher 
 ====
 
 +
-[,plain]
+[,console]
 ----
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
@@ -101,7 +100,7 @@ helm template ./cert-manager-<version>.tgz | awk '$1 ~ /image:/ {print $2}' | se
 
 . Sort and unique the images list to remove any overlap between the sources:
 +
-[,plain]
+[,console]
 ----
 sort -u rancher-images.txt -o rancher-images.txt
 ----
@@ -110,20 +109,47 @@ sort -u rancher-images.txt -o rancher-images.txt
 [pass]
 <h3><a id="_3_save_the_images_to_your_workstation"></a>3. Save the images to your workstation</h3>
 
+. *(Optional)* Verify the image list before pulling:
++
+[,console]
+----
+wc -l rancher-images.txt
+head rancher-images.txt
+----
+
 . Make `rancher-save-images.sh` an executable:
 +
+[,console]
 ----
 chmod +x rancher-save-images.sh
 ----
 
 . Run `rancher-save-images.sh` with the `rancher-images.txt` image list to create a tarball of all the required images:
 +
-[,plain]
+[,console]
 ----
 ./rancher-save-images.sh --image-list ./rancher-images.txt
 ----
+
+. *(Optional)* Specify a custom output file:
 +
-*Result:* Docker begins pulling the images used for an air gap install. Be patient. This process takes a few minutes. When the process completes, your current directory will output a tarball named `rancher-images.tar.gz`. Check that the output is in the directory.
+[,console]
+----
+./rancher-save-images.sh \
+  --image-list ./rancher-images.txt \
+  --images rancher-images-custom.tar.gz
+----
++
+*Result:* Docker begins pulling the images used for an air-gap install. Be patient. This process takes a few minutes.
+
+. Verify that the tarball was created:
++
+[,console]
+----
+ls -lh rancher-images.tar.gz
+----
++
+If some images fail to pull, review the output and retry after resolving any issues.
 
 [#_linux_4_populate_the_private_registry]
 [pass]
@@ -137,7 +163,7 @@ The `rancher-images.txt` is expected to be on the workstation in the same direct
 
 . Log into your private registry if required:
 +
-[,plain]
+[,console]
 ----
    docker login <REGISTRY.YOURDOMAIN.COM:PORT>
 ----
@@ -150,7 +176,7 @@ The `rancher-images.txt` is expected to be on the workstation in the same direct
 
 . Use `rancher-load-images.sh` to extract, tag and push `rancher-images.txt` and `rancher-images.tar.gz` to your private registry:
 +
-[,plain]
+[,console]
 ----
    ./rancher-load-images.sh --image-list ./rancher-images.txt --registry <REGISTRY.YOURDOMAIN.COM:PORT>
 ----
@@ -208,12 +234,12 @@ Your registry must support manifests. As of April 2020, Amazon Elastic Container
 . Using `powershell`, go to the directory that has the files that were downloaded in the previous step.
 . Run `rancher-save-images.ps1` to create a tarball of all the required images:
 +
-[,plain]
+[,console]
 ----
 ./rancher-save-images.ps1
 ----
 +
-*Result:* Docker begins pulling the images used for an air gap install. Be patient. This process takes a few minutes. When the process completes, your current directory will output a tarball named `rancher-windows-images.tar.gz`. Check that the output is in the directory.
+*Result:* Docker begins pulling the images used for an air-gap install. Be patient. This process takes a few minutes. When the process completes, your current directory will output a tarball named `rancher-windows-images.tar.gz`. Check that the output is in the directory.
 
 [#_3_prepare_the_docker_daemon]
 [pass]
@@ -243,14 +269,14 @@ The `rancher-windows-images.txt` is expected to be on the workstation in the sam
 
 . Using `powershell`, log into your private registry if required:
 +
-[,plain]
+[,console]
 ----
 docker login <REGISTRY.YOURDOMAIN.COM:PORT>
 ----
 
 . Using `powershell`, use `rancher-load-images.ps1` to extract, tag and push the images from `rancher-images.tar.gz` to your private registry:
 +
-[,plain]
+[,console]
 ----
 ./rancher-load-images.ps1 --registry <REGISTRY.YOURDOMAIN.COM:PORT>
 ----
@@ -310,7 +336,7 @@ Recent changes to cert-manager require an upgrade. If you are upgrading Rancher 
 ====
 
 +
-[,plain]
+[,console]
 ----
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
@@ -320,7 +346,7 @@ helm template ./cert-manager-<version>.tgz | awk '$1 ~ /image:/ {print $2}' | se
 
 . Sort and unique the images list to remove any overlap between the sources:
 +
-[,plain]
+[,console]
 ----
 sort -u rancher-images.txt -o rancher-images.txt
 ----
@@ -338,12 +364,12 @@ chmod +x rancher-save-images.sh
 
 . Run `rancher-save-images.sh` with the `rancher-images.txt` image list to create a tarball of all the required images:
 +
-[,plain]
+[,console]
 ----
 ./rancher-save-images.sh --image-list ./rancher-images.txt
 ----
 
-*Result:* Docker begins pulling the images used for an air gap install. Be patient. This process takes a few minutes. When the process completes, your current directory will output a tarball named `rancher-images.tar.gz`. Check that the output is in the directory.
+*Result:* Docker begins pulling the images used for an air-gap install. Be patient. This process takes a few minutes. When the process completes, your current directory will output a tarball named `rancher-images.tar.gz`. Check that the output is in the directory.
 
 +++<a name="linux-4">++++++</a>+++
 
@@ -356,7 +382,7 @@ The image list, `rancher-images.txt` or `rancher-windows-images.txt`, is expecte
 
 . Log into your private registry if required:
 +
-[,plain]
+[,console]
 ----
 docker login <REGISTRY.YOURDOMAIN.COM:PORT>
 ----
@@ -369,7 +395,7 @@ chmod +x rancher-load-images.sh
 
 . Use `rancher-load-images.sh` to extract, tag and push the images from `rancher-images.tar.gz` to your private registry:
 
-[,plain]
+[,console]
 ----
 ./rancher-load-images.sh --image-list ./rancher-images.txt \
    --windows-image-list ./rancher-windows-images.txt \
@@ -379,4 +405,3 @@ chmod +x rancher-load-images.sh
 ======
 
 == xref:./install-kubernetes.adoc[Next step for Kubernetes Installs - Launch a Kubernetes Cluster]
-
