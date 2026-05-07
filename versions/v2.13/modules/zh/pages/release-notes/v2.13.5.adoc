@@ -2,7 +2,7 @@
 ifeval::["{build-type}" != "srfa"]
 :page-languages: [en, zh]
 endif::[]
-:revdate: 2026-05-06
+:revdate: 2026-05-07
 :page-revdate: {revdate}
 :release-version: v2.13.5
 :rn-component-version: v2.13
@@ -56,6 +56,12 @@ This release addresses the following Rancher security issues:
 * Fleet's Helm deployer bypassed ServiceAccount impersonation in two places. A tenant with `git push` access to a Fleet-monitored repository could read secrets from any namespace on every downstream cluster targeted by their `GitRepo`. Both paths now use the impersonated credentials throughout and can no longer be bypassed. For more information, refer to https://github.com/rancher/fleet/security/advisories/GHSA-765j-qfrp-hm3j[CVE-2026-41050].
 
 For additional details, see the Security Advisories and CVEs page in Rancher's xref:security/cves.adoc[documentation] or in Rancher's GitHub https://github.com/rancher/rancher/security/advisories[repository].
+
+== Rancher App (Global UI)
+
+=== Known Issues
+
+* A known issue exists where add-on charts' values are not preserved when viewing or editing clusters in the Rancher UI. Editing clusters via YAML is not affected. See https://github.com/rancher/dashboard/issues/17498[#17498].
 
 == K3s and RKE2 Provisioning
 

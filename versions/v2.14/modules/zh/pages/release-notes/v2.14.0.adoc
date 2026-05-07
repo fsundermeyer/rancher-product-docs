@@ -99,6 +99,10 @@ endif::[]
 - Lists showing Custom Resources with Age columns of type Date are now correctly handled, similarly to other Age columns. See https://github.com/rancher/dashboard/issues/15711[#15711].
 - Fixed an issue when a standard user with the Cluster Owner role attempted to edit an Azure or AKS cluster, the Machine Pools section showed an error `Cannot read properties of undefined...`. See https://github.com/rancher/dashboard/issues/15241[#15241].
 
+=== Known Issues
+
+- A known issue exists where add-on charts' values are not preserved when viewing or editing clusters in the Rancher UI. Editing clusters via YAML is not affected. See https://github.com/rancher/dashboard/issues/17498[#17498].
+
 == Rancher CLI
 
 === Behavior Changes
